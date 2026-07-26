@@ -741,18 +741,17 @@ function toggleMenu() {
     const card = document.getElementById('lastMatchCard');
     try {
       const snap = await db.collection('posts')
-        .where('type', '==', 'match')
         .orderBy('createdAt', 'desc')
-        .limit(1)
         .get();
 
-      if (snap.empty) {
+      const matchDoc = snap.docs.find(d => d.data().type === 'match');
+
+      if (!matchDoc) {
         card.innerHTML = '<p class="lastmatch-empty">Aucun match publié pour le moment.</p>';
         return;
       }
 
-      const doc = snap.docs[0];
-      const p = doc.data();
+      const p = matchDoc.data();
 
       const date = p.createdAt?.toDate
         ? p.createdAt.toDate().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -774,7 +773,7 @@ function toggleMenu() {
         <a href="./blogue/" class="lastmatch-link">Voir tous les résultats →</a>
       `;
     } catch (e) {
-      card.innerHTML = `<p class="lastmatch-empty">Erreur de chargement du dernier match.</p>`;
+      card.innerHTML = `<p class="lastmatch-empty">Erreur de chargement : ${e.message}</p>`;
       console.error(e);
     }
   }
